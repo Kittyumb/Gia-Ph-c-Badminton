@@ -105,14 +105,30 @@ export async function saveTournamentToFirestore(
 ): Promise<void> {
   const path = `tournaments/${TOURNAMENT_DOC_ID}`;
   try {
-    const payload = {
+    const rawPayload = {
       id: TOURNAMENT_DOC_ID,
       name: 'Gia Phúc Cup 2026',
       v: state.v || 2,
-      teams: state.teams,
-      courts: state.courts,
-      matches: state.matches,
-      bracket: state.bracket || null,
+      teams: (state.teams || []).map((t) => ({
+        id: t.id,
+        name: t.name || '',
+        p1: t.p1 || '',
+        p2: t.p2 || '',
+      })),
+      courts: state.courts || ['Sân 1', 'Sân 2'],
+      matches: (state.matches || []).map((m) => ({
+        id: m.id,
+        court: m.court,
+        slot: m.slot,
+        a: m.a || '',
+        b: m.b || '',
+        sa: m.sa ?? 0,
+        sb: m.sb ?? 0,
+        forfeit: m.forfeit || '',
+        final: Boolean(m.final),
+        referee: m.referee || '',
+      })),
+      bracket: state.bracket ? JSON.parse(JSON.stringify(state.bracket)) : null,
       tieOrder: state.tieOrder || {},
       tieConfirm: state.tieConfirm || {},
       court: state.court || 1,
@@ -120,6 +136,9 @@ export async function saveTournamentToFirestore(
       updatedAt: new Date().toISOString(),
       updatedBy: userEmail || auth.currentUser?.email || 'Hệ thống điều hành',
     };
+
+    // Eliminate any undefined properties to guarantee Firestore setDoc succeeds
+    const payload = JSON.parse(JSON.stringify(rawPayload));
 
     await setDoc(doc(db, 'tournaments', TOURNAMENT_DOC_ID), payload, { merge: true });
   } catch (error) {

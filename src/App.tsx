@@ -902,9 +902,10 @@ export default function App() {
       const user = await loginWithGoogle();
       showToast(`Đã đăng nhập thành công: ${user.email}`);
     } catch (err: any) {
-      if (err?.code !== 'auth/popup-closed-by-user') {
-        showToast(err?.message || 'Đăng nhập Google thất bại.', true);
-      }
+      console.error('Google Auth Error:', err);
+      const errCode = err?.code || 'auth/unknown';
+      const errMsg = err?.message || 'Lỗi không xác định khi đăng nhập.';
+      showToast(`Lỗi đăng nhập [${errCode}]: ${errMsg}`, true);
     }
   }, [showToast]);
 
