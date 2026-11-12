@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gia Phúc Cup 2026 — Bảng điều hành giải cầu lông</title>
+    <meta name="description" content="Bảng điều hành Giải cầu lông tranh cúp Gia Phúc 2026: theo dõi lịch thi đấu, nhập điểm trực tiếp, xếp hạng vòng ngoài, bán kết, chung kết và trao giải." />
+    <meta property="og:title" content="Gia Phúc Cup 2026 — Bảng điều hành giải cầu lông" />
+    <meta property="og:description" content="Hệ thống điều hành thi đấu, ghi điểm trực tiếp và bảng xếp hạng Giải cầu lông tranh cúp Gia Phúc 2026." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Guard against browser extensions attempting to assign window.fetch
+      (function() {
+        try {
+          var _origFetch = window.fetch ? window.fetch.bind(window) : null;
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return _origFetch;
+            },
+            set: function(fn) {
+              _origFetch = fn;
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {
+          // ignore
+        }
+
+        window.addEventListener('error', function(event) {
+          if (
+            (event.filename && event.filename.indexOf('chrome-extension://') !== -1) ||
+            (event.message && event.message.indexOf('chrome-extension://') !== -1) ||
+            (event.message && event.message.indexOf('which has only a getter') !== -1)
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

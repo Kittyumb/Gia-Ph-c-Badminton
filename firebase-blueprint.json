@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "tournament": {
+      "title": "Tournament",
+      "description": "State of the badminton tournament including teams, matches, brackets, and court setups",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the tournament",
+          "maxLength": 64
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the tournament",
+          "maxLength": 128
+        },
+        "v": {
+          "type": "number",
+          "description": "Schema version number"
+        },
+        "teams": {
+          "type": "array",
+          "description": "List of participating teams and players"
+        },
+        "courts": {
+          "type": "array",
+          "description": "List of court names"
+        },
+        "matches": {
+          "type": "array",
+          "description": "List of matches in the outer/group stage"
+        },
+        "bracket": {
+          "type": "object",
+          "description": "Knockout stage bracket data"
+        },
+        "tieOrder": {
+          "type": "object",
+          "description": "Tie breaker resolved ordering"
+        },
+        "tieConfirm": {
+          "type": "object",
+          "description": "Tie breaker confirmation flags"
+        },
+        "court": {
+          "type": "number",
+          "description": "Currently highlighted court number"
+        },
+        "activeMatchId": {
+          "type": "string",
+          "description": "Currently active match ID for live scoring",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO string timestamp of last modification",
+          "maxLength": 64
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "User ID or email of last updater",
+          "maxLength": 128
+        }
+      },
+      "required": ["id", "v", "teams", "matches"]
+    },
+    "admin": {
+      "title": "Admin",
+      "description": "Administrator account with permission to manage tournaments",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email address of the administrator",
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "description": "Role level of administrator",
+          "enum": ["admin", "organizer", "referee"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when admin was registered",
+          "maxLength": 64
+        }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/tournaments/{tournamentId}": {
+      "schema": "tournament",
+      "description": "Tournament data storing matches, brackets, and real-time scores"
+    },
+    "/admins/{userId}": {
+      "schema": "admin",
+      "description": "Designated tournament administrators and organizers"
+    }
+  }
+}

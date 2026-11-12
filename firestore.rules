@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Security Primitives & Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isSuperAdmin() {
+      return isVerified() && (
+        request.auth.token.email == 'nuttency@gmail.com' ||
+        request.auth.token.email == 'kittyumbs.tmd.047@gmail.com'
+      );
+    }
+
+    function isAdmin() {
+      return isSuperAdmin() || (isVerified() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function isValidTournament(data) {
+      return data.keys().hasAll(['id', 'v', 'teams', 'matches']) &&
+             data.keys().hasOnly([
+               'id', 'name', 'v', 'teams', 'courts', 'matches', 
+               'bracket', 'tieOrder', 'tieConfirm', 'court', 
+               'activeMatchId', 'updatedAt', 'updatedBy'
+             ]) &&
+             data.id is string && data.id.size() <= 64 &&
+             data.v is number && data.v >= 1 &&
+             data.teams is list && data.teams.size() <= 64 &&
+             data.matches is list && data.matches.size() <= 256 &&
+             (!('name' in data) || (data.name is string && data.name.size() <= 128)) &&
+             (!('courts' in data) || (data.courts is list && data.courts.size() <= 16)) &&
+             (!('bracket' in data) || data.bracket == null || data.bracket is map) &&
+             (!('tieOrder' in data) || data.tieOrder is map) &&
+             (!('tieConfirm' in data) || data.tieConfirm is map) &&
+             (!('court' in data) || (data.court is number)) &&
+             (!('activeMatchId' in data) || (data.activeMatchId is string && data.activeMatchId.size() <= 64)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64)) &&
+             (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 128));
+    }
+
+    function isValidAdminDoc(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+             data.keys().hasOnly(['email', 'role', 'createdAt']) &&
+             data.email is string && data.email.size() <= 128 &&
+             data.role in ['admin', 'organizer', 'referee'] &&
+             (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
+    }
+
+    // Health / connection probe document
+    match /test/{docId} {
+      allow get: if isValidId(docId);
+    }
+
+    // Public read for live spectator scoreboard, open writes for on-court referees and tournament organizers
+    match /tournaments/{tournamentId} {
+      allow get: if isValidId(tournamentId);
+      allow list: if false; // Tournament queries must fetch target tournament by document ID
+      allow create: if isValidId(tournamentId) &&
+                       incoming().id == tournamentId &&
+                       isValidTournament(incoming());
+      allow update: if isValidId(tournamentId) &&
+                       incoming().id == existing().id &&
+                       isValidTournament(incoming());
+      allow delete: if isValidId(tournamentId) && isAdmin();
+    }
+
+    // Administrator roles management
+    match /admins/{userId} {
+      allow get: if isValidId(userId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId));
+      allow list: if isAdmin();
+      allow create, update: if isValidId(userId) && isAdmin() && isValidAdminDoc(incoming());
+      allow delete: if isValidId(userId) && isAdmin();
+    }
+  }
+}

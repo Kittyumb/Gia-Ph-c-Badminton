@@ -1,0 +1,8 @@
+{
+  "name": "Remix Gia Phúc Cup 2026",
+  "description": "Bảng điều hành Giải cầu lông tranh cúp Gia Phúc 2026: theo dõi lịch thi đấu, nhập điểm trực tiếp, xếp hạng vòng ngoài, bán kết, chung kết và trao giải.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
